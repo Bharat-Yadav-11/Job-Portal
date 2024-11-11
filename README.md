@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Job Portal Website
 
-## Getting Started
+Job Portal is a comprehensive web dashboard aimed at bridging the gap between students, companies, and the placement department of K.R. Mangalam University.
+A comprehensive job portal platform where companies can onboard as recruiters to post job openings, and candidates can apply for these jobs. The platform includes a feed page, activity tracking, and tailored functionalities for both candidates and recruiters.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Company (Recruiter) Onboarding**: Companies can register, create profiles, and post job listings.
+- **Candidate Onboarding**: Candidates can sign up, browse job listings, and apply for jobs.
+- **Job Listings**: Recruiters create job posts with detailed descriptions and requirements, which candidates can explore and apply to.
+- **Activity Feed**: Candidates have a personalized feed to keep track of applications and updates from recruiters.
+- **User Dashboard**: Each user (candidate or recruiter) has a dashboard to manage their applications, jobs posted, and other activities.
+- **Payment Integration**: Stripe is integrated as the payment gateway to enable additional services, such as premium job posting options for recruiters.
+- **Authentication and Security**: Clerk handles user authentication, ensuring secure and reliable onboarding.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Tools and Technologies
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+- **NestJS v14**: Backend framework used for scalable and efficient server-side development.
+- **Supabase**: Used for handling storage needs, such as storing documents or resumes uploaded by candidates.
+- **MongoDB**: Primary database used to store user profiles, job posts, applications, and related data.
+- **Clerk**: Authentication solution used to handle user sign-ups, logins, and session management.
+- **Stripe**: Payment processing solution for handling payments, subscriptions, and premium features.
+- **Tailwind CSS**: CSS framework for creating responsive, modern UI components and layouts with minimal custom styling.
+- **ShadCN**: Component library for building consistent and accessible UI elements, enhancing the app’s design and interactivity.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## Installation and Setup
 
-## Learn More
+To set up and run the application locally, follow these steps:
 
-To learn more about Next.js, take a look at the following resources:
+### 1. Clone the Repository
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Clone this repository to your local machine:
+   ```bash
+   git clone <repository-url>
+   cd job-portal-website
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+2. Install Dependencies
+Install the necessary dependencies using npm:
+    ```bash
+    npm install
 
-## Deploy on Vercel
+3. Configure Environment Variables
+    Create a .env.local file in the root directory and add the required environment variables. These include configurations for Clerk.
+        ```bash 
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<your-clerk-api-key>
+        CLERK_SECRET_KEY=<your-clerk-secret-key>
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+        NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+        NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+        NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/
+        NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+    Create a .env file in the root directory and add the required environment variables. These include configurations Stripe, MongoDB, and Supabase.
+        ```bash
+        # Stripe
+        STRIPE_SECRET_KEY=<your-stripe-secret-key>
+
+        # MongoDB
+        MONGODB_URI=<your-mongodb-uri>
+
+        # Supabase
+        SUPABASE_URL=<your-supabase-url>
+        SUPABASE_KEY=<your-supabase-key>
+
+4. Run the Application 
+After setting up environment variables, you can start the application:
+    ```bash
+    npm run dev
+The application should now be running locally. Access it by navigating to http://localhost:3000 in your browser.
+
+## Contributing
+Contributions are welcome! If you’d like to contribute, please fork the repository, create a branch, and submit a pull request. You can also open issues to report bugs or suggest new features.
+
+## License
+This project is licensed under the MIT License.
