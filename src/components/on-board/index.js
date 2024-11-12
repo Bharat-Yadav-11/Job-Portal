@@ -9,13 +9,13 @@ import {
   initialRecruiterFormData,
   recruiterOnboardFormControls,
 } from "@/utils";
-import { useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs"; 
 import { createProfileAction } from "@/actions";
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseClient = createClient(
-  "https://ymsijpnegskkoiuerthi.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inltc2lqcG5lZ3Nra29pdWVydGhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQyMzYzNDYsImV4cCI6MjAyOTgxMjM0Nn0.PM7Nr9qTZFEJsf62eHgkFXKGPqt0gfMdFN6SOJjCP6M"
+  "https://dkxfxbntwhjzboylvwnh.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRreGZ4Ym50d2hqemJveWx2d25oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzEzNDgwNDUsImV4cCI6MjA0NjkyNDA0NX0.3rErx-i1BZdik9mM96vOE0XGXDo-UvdbAqeDAskMP-c"
 );
 
 function OnBoard() {
