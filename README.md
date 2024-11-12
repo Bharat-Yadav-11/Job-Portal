@@ -15,7 +15,7 @@ A comprehensive job portal platform where companies can onboard as recruiters to
 
 ## Tools and Technologies
 
-- **NestJS v14**: Backend framework used for scalable and efficient server-side development.
+- **NextJS v14**: Backend framework used for scalable and efficient server-side development.
 - **Supabase**: Used for handling storage needs, such as storing documents or resumes uploaded by candidates.
 - **MongoDB**: Primary database used to store user profiles, job posts, applications, and related data.
 - **Clerk**: Authentication solution used to handle user sign-ups, logins, and session management.
