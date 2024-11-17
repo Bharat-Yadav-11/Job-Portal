@@ -37,13 +37,15 @@ function OnBoard() {
   }
 
   async function handleUploadPdfToSupabase() {
+    const uniqueFileName = `${Date.now()}_${file.name}`;
+
     const { data, error } = await supabaseClient.storage
       .from("job-board-public")
-      .upload(`/public/${file.name}`, file, {
+      .upload(`/public/${uniqueFileName}`, file, {
         cacheControl: "3600",
         upsert: false,
       });
-    console.log(data, error);
+
     if (data) {
       setCandidateFormData({
         ...candidateFormData,
@@ -51,8 +53,6 @@ function OnBoard() {
       });
     }
   }
-
-  console.log(candidateFormData);
 
   useEffect(() => {
     if (file) handleUploadPdfToSupabase();
@@ -97,8 +97,6 @@ function OnBoard() {
 
     await createProfileAction(data, "/onboard");
   }
-
-  console.log(candidateFormData);
 
   return (
     <div className="bg-white">

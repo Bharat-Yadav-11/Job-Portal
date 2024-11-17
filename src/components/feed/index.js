@@ -22,56 +22,78 @@ function Feed({ user, profileInfo, allFeedPosts }) {
     imageURL: "",
   });
   const [imageData, setImageData] = useState(null);
+  const [likedPostId, setLikedPostId] = useState(null); // Track the post that was liked
+  const [isAnimating, setIsAnimating] = useState(false);
 
   function handleFileOnChange(event) {
     event.preventDefault();
     setImageData(event.target.files[0]);
   }
 
-  function handleFetchImagePublicUrl(getData) {
-    const { data } = supabaseClient.storage
-      .from("job-board-public")
-      .getPublicUrl(getData.path);
-
-    console.log(data);
-
-    if (data)
-      setFormData({
-        ...formData,
-        imageURL: data.publicUrl,
-      });
-  }
-
   async function handleUploadImageToSupabase() {
+    if (!imageData) {
+      console.error("No image data found.");
+      return null;
+    }
+
+    const uniqueFileName = `${Date.now()}_${imageData.name}`;
     const { data, error } = await supabaseClient.storage
       .from("job-board-public")
-      .upload(`/public/${imageData?.name}`, imageData, {
+      .upload(`/public/${uniqueFileName}`, imageData, {
         cacheControl: "3600",
         upsert: false,
       });
 
-    console.log(data, error);
+    if (error) {
+      console.error("Error uploading image:", error);
+      return null;
+    }
 
-    if (data) handleFetchImagePublicUrl(data);
+    // Fetch and return the public URL of the uploaded image
+    const publicUrl = await fetchPublicUrl(data.path);
+    return publicUrl;
+  }
+
+  async function fetchPublicUrl(path) {
+    const { data, error } = await supabaseClient.storage
+      .from("job-board-public")
+      .getPublicUrl(path);
+
+    if (data) {
+      return data.publicUrl;
+    } else {
+      console.error("Error fetching public URL:", error);
+      return null;
+    }
   }
 
   async function handleSaveFeedPost() {
-    await createFeedPostAction(
-      {
-        userId: user?.id,
-        userName:
-          profileInfo?.candidateInfo?.name || profileInfo?.recruiterInfo?.name,
-        message: formData?.message,
-        image: formData?.imageURL,
-        likes: [],
-      },
-      "/feed"
-    );
+    if (imageData) {
 
-    setFormData({
-      imageURL: "",
-      message: "",
-    });
+      const imageUrl = await handleUploadImageToSupabase();
+
+      if (imageUrl) {
+        // Once the image is uploaded and we have the URL, save the post with the URL
+        console.log("Saving post with image URL:", imageUrl);
+        await createFeedPostAction(
+          {
+            userId: user?.id,
+            userName: profileInfo?.candidateInfo?.name || profileInfo?.recruiterInfo?.name,
+            message: formData?.message,
+            image: imageUrl,  // Image URL is now set
+            likes: [],
+          },
+          "/feed"
+        );
+
+        setFormData({
+          imageURL: "",
+          message: "",
+        });
+      } else {
+        console.error("Image upload failed. Post not saved.");
+      }
+    }
   }
 
   async function handleUpdateFeedPostLikes(getCurrentFeedPostItem) {
@@ -90,13 +112,17 @@ function Feed({ user, profileInfo, allFeedPosts }) {
 
     getCurrentFeedPostItem.likes = cpyLikesFromCurrentFeedPostItem;
     await updateFeedPostAction(getCurrentFeedPostItem, "/feed");
+
+    setLikedPostId(getCurrentFeedPostItem._id); // Track the liked post ID
+    setIsAnimating(true); // Start animation
+    setTimeout(() => setIsAnimating(false), 250); // Reset animation after 250ms
   }
 
   useEffect(() => {
-    if (imageData) handleUploadImageToSupabase();
+    if (imageData) {
+      handleUploadImageToSupabase();  // Trigger the image upload only when imageData changes
+    }
   }, [imageData]);
-
-  console.log(allFeedPosts);
 
   return (
     <Fragment>
@@ -140,11 +166,14 @@ function Feed({ user, profileInfo, allFeedPosts }) {
                       <Heart
                         size={25}
                         fill={
-                          feedPostItem?.likes?.length > 0
-                            ? "#000000"
-                            : "#ffffff"
+                          feedPostItem?.likes.some((likeItem) => likeItem.reactorUserId === user?.id)
+                            ? "#000000" // Black if the post is liked
+                            : "#ffffff" // White if the post is not liked
                         }
-                        className="cursor-pointer"
+                        className={`cursor-pointer transition-transform duration-300 ${likedPostId === feedPostItem._id && isAnimating
+                          ? "scale-150"
+                          : "scale-100"
+                          }`} // Add scaling effect
                         onClick={() => handleUpdateFeedPostLikes(feedPostItem)}
                       />
                       <span className="font-semibold text-xl">

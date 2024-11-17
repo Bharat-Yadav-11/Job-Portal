@@ -30,8 +30,6 @@ function CandidateList({
     }
   }
 
-  console.log(currentCandidateDetails);
-
   function handlePreviewResume() {
     const { data } = supabaseClient.storage
       .from("job-board-public")
@@ -62,8 +60,6 @@ function CandidateList({
     console.log(jobApplicantsToUpdate, "jobApplicantsToUpdate");
     await updateJobApplicationAction(jobApplicantsToUpdate, "/jobs");
   }
-
-  console.log(jobApplications);
 
   return (
     <Fragment>
