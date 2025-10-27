@@ -87,3 +87,17 @@ body::-webkit-scrollbar-thumb {
   background-color: darkgrey;
   outline: 1px solid slategrey;
 }
+
+@keyframes scroll {
+  to {
+    transform: translate(calc(-50% - 0.5rem * var(--tw-space-x-reverse, 0)));
+  }
+}
+
+.animate-scroll {
+  animation: scroll var(--duration, 40s) linear infinite;
+}
+
+.dark .dark\:invert {
+    filter: invert(1);
+}
