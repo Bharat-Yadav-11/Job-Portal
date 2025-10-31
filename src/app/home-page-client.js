@@ -2,7 +2,7 @@
 
 import { Fragment, useState, useEffect, useRef } from "react";
 import HomepageButtonControls from "@/components/homepage-button-controls";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const featuredCompanies = [
     { name: "Google", logo: "https://www.vectorlogo.zone/logos/google/google-ar21.svg" },
@@ -42,45 +42,88 @@ const LeftArrowIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h
 const RightArrowIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>;
 
 export default function HomePageClient({ user, profileInfo }) {
-    
-    const HowItWorks = () => {
+
+    function HowItWorks() {
         const [activeTab, setActiveTab] = useState('students');
 
         const studentSteps = [
             { icon: <ProfileIcon />, title: "Create Your Profile", description: "Build a standout profile that showcases your skills, projects, and ambitions to catch the eye of top recruiters." },
-            { icon: <SearchIcon />, title: "Discover Opportunities", description: "Use our powerful, intuitive search filters to find internships and full-time jobs that perfectly match your career goals." },
-            { icon: <ApplyIcon />, title: "Apply & Get Hired", description: "Apply to your dream jobs with a single click and connect directly with hiring managers and recruiters." },
+            { icon: <SearchIcon />, title: "Discover Opportunities", description: "Use our powerful filters to find internships and jobs that perfectly match your career goals." },
+            { icon: <ApplyIcon />, title: "Apply & Get Hired", description: "Apply to your dream jobs with a single click and connect directly with hiring managers." },
         ];
+
         const recruiterSteps = [
-            { icon: <BriefcaseIcon />, title: "Post a Job", description: "Easily create and publish detailed job listings to our vast network of talented students and recent graduates." },
-            { icon: <SearchIcon />, title: "Source Top Talent", description: "Search our curated database of skilled candidates and use filters to find the perfect fit for your team." },
-            { icon: <ApplyIcon />, title: "Hire Professionals", description: "Manage applicants through a streamlined dashboard, conduct interviews, and hire your next great team member." },
+            { icon: <BriefcaseIcon />, title: "Post a Job", description: "Easily create and publish detailed job listings to reach our vast network of talented students." },
+            { icon: <SearchIcon />, title: "Source Top Talent", description: "Search our curated database of skilled candidates and find the perfect fit for your team." },
+            { icon: <ApplyIcon />, title: "Hire Professionals", description: "Manage applicants through a streamlined dashboard and hire your next great team member." },
         ];
+
+        const stepsToShow = activeTab === 'students' ? studentSteps : recruiterSteps;
 
         return (
             <div className="container mx-auto px-6">
                 <div className="text-center mb-12">
-                    <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white sm:text-4xl">How HireHub Works</h2>
-                    <p className="mt-4 text-lg text-gray-600 dark:text-gray-300">A straightforward path for everyone involved.</p>
+                    <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white sm:text-4xl">How HireHub Works</h2>
+                    <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">A straightforward path for everyone involved.</p>
                 </div>
-                <div className="max-w-2xl mx-auto mb-8 p-1.5 flex bg-gray-200 dark:bg-gray-800 rounded-full">
-                    <button onClick={() => setActiveTab('students')} className={`w-1/2 py-2.5 px-4 rounded-full transition-colors duration-300 ${activeTab === 'students' ? 'bg-indigo-600 text-white shadow' : 'text-gray-600 dark:text-gray-300'}`}>For Students</button>
-                    <button onClick={() => setActiveTab('recruiters')} className={`w-1/2 py-2.5 px-4 rounded-full transition-colors duration-300 ${activeTab === 'recruiters' ? 'bg-indigo-600 text-white shadow' : 'text-gray-600 dark:text-gray-300'}`}>For Recruiters</button>
+
+                <div className="max-w-md mx-auto mb-16 p-1.5 flex bg-slate-100/80 dark:bg-black/20 backdrop-blur-lg border border-slate-200 dark:border-slate-800 rounded-full">
+                    <button
+                        onClick={() => setActiveTab('students')}
+                        className="w-1/2 py-2.5 px-4 rounded-full font-semibold transition-colors duration-300 relative text-slate-800 dark:text-slate-300"
+                    >
+                        {activeTab === 'students' && (
+                            <motion.div
+                                layoutId="tab-highlighter"
+                                className="absolute inset-0 bg-indigo-600 dark:bg-indigo-500 rounded-full"
+                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            />
+                        )}
+                        <span className={`relative z-10 transition-colors ${activeTab === 'students' ? 'text-white' : 'dark:hover:text-white'}`}>For Students</span>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('recruiters')}
+                        className="w-1/2 py-2.5 px-4 rounded-full font-semibold transition-colors duration-300 relative text-slate-800 dark:text-slate-300"
+                    >
+                        {activeTab === 'recruiters' && (
+                            <motion.div
+                                layoutId="tab-highlighter"
+                                className="absolute inset-0 bg-indigo-600 dark:bg-indigo-500 rounded-full"
+                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            />
+                        )}
+                        <span className={`relative z-10 transition-colors ${activeTab === 'recruiters' ? 'text-white' : 'dark:hover:text-white'}`}>For Recruiters</span>
+                    </button>
                 </div>
-                <div className="grid md:grid-cols-3 gap-8 mt-12 text-center">
-                    {(activeTab === 'students' ? studentSteps : recruiterSteps).map((step, index) => (
-                        <div key={index} className="p-6">
-                            <div className="flex items-center justify-center h-16 w-16 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 mx-auto mb-4">
-                                {step.icon}
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">{step.title}</h3>
-                            <p className="mt-2 text-gray-600 dark:text-gray-400">{step.description}</p>
-                        </div>
-                    ))}
+
+                <div className="grid md:grid-cols-3 gap-8">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={activeTab}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.3 }}
+                            className="grid md:grid-cols-3 gap-8 col-span-3"
+                        >
+                            {stepsToShow.map((step, index) => (
+                                <div key={index} className="group relative p-8 text-center bg-white/60 dark:bg-black/20 backdrop-blur-lg border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:cursor-pointer">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 dark:from-indigo-500/20" />
+                                    <div className="relative z-10">
+                                        <div className="flex items-center justify-center h-16 w-16 rounded-xl bg-slate-100 dark:bg-slate-800 text-indigo-500 dark:text-indigo-400 mx-auto mb-6 border border-slate-200 dark:border-slate-700">
+                                            {step.icon}
+                                        </div>
+                                        <h3 className="text-xl font-bold text-slate-900 dark:text-white">{step.title}</h3>
+                                        <p className="mt-2 text-slate-600 dark:text-slate-400">{step.description}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </motion.div>
+                    </AnimatePresence>
                 </div>
             </div>
         );
-    };
+    }
 
     function TestimonialCarousel({ testimonials }) {
         const [currentIndex, setCurrentIndex] = useState(0);
@@ -276,7 +319,7 @@ export default function HomePageClient({ user, profileInfo }) {
             </section>
 
             {/* === HOW IT WORKS SECTION === */}
-            <section className="py-20 mb-20 bg-white dark:bg-black"><HowItWorks /></section>
+            <section className="py-20 mb-20 bg-slate-50 dark:bg-black"><HowItWorks /></section>
 
             {/* === LATEST JOBS (NEW DESIGN) SECTION === */}
             <section className="w-full py-24 mb-20 bg-gray-50 dark:bg-gray-900">
@@ -354,7 +397,6 @@ export default function HomePageClient({ user, profileInfo }) {
 
                 <TestimonialCarousel testimonials={testimonials} />
             </section>
-
 
             {/* === FINAL CTA SECTION === */}
             <section className="py-20 w-full antialiased">

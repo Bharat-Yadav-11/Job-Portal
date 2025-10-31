@@ -52,9 +52,9 @@ export default function Footer() {
             &copy; 2025 HireHub. All rights reserved.
           </p>
           <div className="flex space-x-6 md:order-2 order-1">
-            <Link href="#" className="text-slate-400 hover:text-white transition-colors"><Twitter size={20} /></Link>
-            <Link href="#" className="text-slate-400 hover:text-white transition-colors"><Linkedin size={20} /></Link>
-            <Link href="#" className="text-slate-400 hover:text-white transition-colors"><Github size={20} /></Link>
+            <Link href="https://x.com/BharatYadav9910" target="_blank" className="text-slate-400 hover:text-white transition-colors"><Twitter size={20} /></Link>
+            <Link href="https://www.linkedin.com/in/bharatdev/" target="_blank" className="text-slate-400 hover:text-white transition-colors"><Linkedin size={20} /></Link>
+            <Link href="https://github.com/Bharat-Yadav-11" target="_blank" className="text-slate-400 hover:text-white transition-colors"><Github size={20} /></Link>
           </div>
         </div>
       </div>
