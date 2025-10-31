@@ -1,7 +1,10 @@
-import {SignUp} from '@clerk/nextjs'
+import { SignUp } from '@clerk/nextjs'
 
+export default function SignUpPage() {
+    return (
+        <div className="flex items-center justify-center m-10">
+            <SignUp />
+        </div>
 
-export default function SignUpPage(){
-
-    return <SignUp/>
+    );
 }

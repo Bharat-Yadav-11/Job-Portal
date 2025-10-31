@@ -19,7 +19,9 @@ async function CommonLayout({ children, ...props }) {
         />
 
         {/* Main Content */}
-        <main>{children}</main>
+        <main className="pt-16">
+          {children}
+        </main>
 
       </div>
         {/* Footer Component */}
