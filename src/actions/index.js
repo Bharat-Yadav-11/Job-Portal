@@ -200,38 +200,46 @@ export async function createStripePaymentAction(data) {
   };
 }
 
-//create post action
-export async function createFeedPostAction(data, pathToRevalidate) {
+//  ACTION TO CREATE A NEW FEED POST 
+export async function createFeedPostAction(formData, pathToRevalidate) {
   await connectToDB();
-  await Feed.create(data);
+  await Feed.create(formData);
   revalidatePath(pathToRevalidate);
 }
 
-//fetch all posts action
+//  ACTION TO FETCH ALL FEED POSTS 
 export async function fetchAllFeedPostsAction() {
   await connectToDB();
   const result = await Feed.find({});
-
   return JSON.parse(JSON.stringify(result));
 }
 
-//update post action
-export async function updateFeedPostAction(data, pathToRevalidate) {
+//  ACTION TO DELETE A FEED POST 
+export async function deleteFeedPostAction(id, pathToRevalidate) {
   await connectToDB();
-  const { userId, userName, message, image, likes, _id } = data;
-  await Feed.findOneAndUpdate(
-    {
-      _id: _id,
-    },
-    {
-      userId,
-      userName,
-      image,
-      message,
-      likes,
-    },
-    { new: true }
-  );
-
+  await Feed.findByIdAndDelete(id);
   revalidatePath(pathToRevalidate);
+}
+
+//  ACTION TO UPDATE A FEED POST 
+export async function updateFeedPostAction(formData, pathToRevalidate) {
+  await connectToDB();
+  const { _id, ...updatedData } = formData;
+  await Feed.findByIdAndUpdate(_id, updatedData);
+  revalidatePath(pathToRevalidate);
+}
+
+//  ACTION TO FETCH DETAILS OF A SINGLE POST 
+export async function fetchFeedPostDetailsAction(id) {
+  await connectToDB();
+  const result = await Feed.findById(id);
+  return JSON.parse(JSON.stringify(result));
+}
+
+//  ACTION TO UPDATE POST LIKES
+export async function updateFeedPostLikesAction(postDetails, pathToRevalidate) {
+    await connectToDB();
+    const { _id, likes } = postDetails;
+    await Feed.findByIdAndUpdate(_id, { likes });
+    revalidatePath(pathToRevalidate);
 }

@@ -1,240 +1,158 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
-import { Button } from "../ui/button";
-import { Dialog, DialogContent } from "../ui/dialog";
-import { Textarea } from "../ui/textarea";
-import { Label } from "../ui/label";
-import { CirclePlus, Heart } from "lucide-react";
-import { Input } from "../ui/input";
-import { createClient } from "@supabase/supabase-js";
-import { createFeedPostAction, updateFeedPostAction } from "@/actions";
+import { Fragment, useState, useOptimistic } from "react";
+import { Button } from "@/components/ui/button";
+import FeedCommonCard from "@/components/feed-common-card";
+import { deleteFeedPostAction, updateFeedPostAction } from "@/actions";
+import FeedPostDialog from "@/components/feed-post-dialog";
+import { LayoutGrid, Rows3, Heart, MoreVertical } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
-const supabaseClient = createClient(
-  "https://dkxfxbntwhjzboylvwnh.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRreGZ4Ym50d2hqemJveWx2d25oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzEzNDgwNDUsImV4cCI6MjA0NjkyNDA0NX0.3rErx-i1BZdik9mM96vOE0XGXDo-UvdbAqeDAskMP-c"
-);
-
-function Feed({ user, profileInfo, allFeedPosts }) {
+export default function Feed({ allFeedPosts, profileInfo, user }) {
+  const [view, setView] = useState("table");
   const [showPostDialog, setShowPostDialog] = useState(false);
-  const [formData, setFormData] = useState({
-    message: "",
-    imageURL: "",
-  });
-  const [imageData, setImageData] = useState(null);
-  const [likedPostId, setLikedPostId] = useState(null); // Track the post that was liked
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [currentEditedItem, setCurrentEditedItem] = useState(null);
+  const router = useRouter();
 
-  function handleFileOnChange(event) {
-    event.preventDefault();
-    setImageData(event.target.files[0]);
+  const [optimisticPosts, setOptimisticPosts] = useOptimistic(
+    allFeedPosts,
+    (state, updatedPost) => {
+      return state.map(post => post._id === updatedPost._id ? updatedPost : post);
+    }
+  );
+
+  function handleEdit(item) {
+    setCurrentEditedItem(item);
+    setShowPostDialog(true);
   }
 
-  async function handleUploadImageToSupabase() {
-    if (!imageData) {
-      console.error("No image data found.");
-      return null;
-    }
-
-    const uniqueFileName = `${Date.now()}_${imageData.name}`;
-    const { data, error } = await supabaseClient.storage
-      .from("job-board-public")
-      .upload(`/public/${uniqueFileName}`, imageData, {
-        cacheControl: "3600",
-        upsert: false,
-      });
-
-    if (error) {
-      console.error("Error uploading image:", error);
-      return null;
-    }
-
-    // Fetch and return the public URL of the uploaded image
-    const publicUrl = await fetchPublicUrl(data.path);
-    return publicUrl;
+  async function handleDelete(id) {
+    await deleteFeedPostAction(id, "/feed");
   }
 
-  async function fetchPublicUrl(path) {
-    const { data, error } = await supabaseClient.storage
-      .from("job-board-public")
-      .getPublicUrl(path);
+  async function handleUpdateLikes(getCurrentFeedPostItem) {
+    let cpyLikes = [...getCurrentFeedPostItem.likes];
+    const index = cpyLikes.findIndex(item => item.reactorUserId === user?.id);
 
-    if (data) {
-      return data.publicUrl;
-    } else {
-      console.error("Error fetching public URL:", error);
-      return null;
-    }
-  }
-
-  async function handleSaveFeedPost() {
-    if (imageData) {
-
-      const imageUrl = await handleUploadImageToSupabase();
-
-      if (imageUrl) {
-        // Once the image is uploaded and we have the URL, save the post with the URL
-        console.log("Saving post with image URL:", imageUrl);
-        await createFeedPostAction(
-          {
-            userId: user?.id,
-            userName: profileInfo?.candidateInfo?.name || profileInfo?.recruiterInfo?.name,
-            message: formData?.message,
-            image: imageUrl,  // Image URL is now set
-            likes: [],
-          },
-          "/feed"
-        );
-
-        setFormData({
-          imageURL: "",
-          message: "",
-        });
-      } else {
-        console.error("Image upload failed. Post not saved.");
-      }
-    }
-  }
-
-  async function handleUpdateFeedPostLikes(getCurrentFeedPostItem) {
-    let cpyLikesFromCurrentFeedPostItem = [...getCurrentFeedPostItem.likes];
-    const index = cpyLikesFromCurrentFeedPostItem.findIndex(
-      (likeItem) => likeItem.reactorUserId === user?.id
-    );
-
-    if (index === -1)
-      cpyLikesFromCurrentFeedPostItem.push({
+    if (index === -1) {
+      cpyLikes.push({
         reactorUserId: user?.id,
-        reactorUserName:
-          profileInfo?.candidateInfo?.name || profileInfo?.recruiterInfo?.name,
+        reactorUserName: profileInfo?.recruiterInfo?.name || profileInfo?.candidateInfo?.name,
       });
-    else cpyLikesFromCurrentFeedPostItem.splice(index, 1);
-
-    getCurrentFeedPostItem.likes = cpyLikesFromCurrentFeedPostItem;
-    await updateFeedPostAction(getCurrentFeedPostItem, "/feed");
-
-    setLikedPostId(getCurrentFeedPostItem._id); // Track the liked post ID
-    setIsAnimating(true); // Start animation
-    setTimeout(() => setIsAnimating(false), 250); // Reset animation after 250ms
-  }
-
-  useEffect(() => {
-    if (imageData) {
-      handleUploadImageToSupabase();  // Trigger the image upload only when imageData changes
+    } else {
+      cpyLikes.splice(index, 1);
     }
-  }, [imageData]);
+
+    setOptimisticPosts({
+      ...getCurrentFeedPostItem,
+      likes: cpyLikes
+    });
+
+    await updateFeedPostAction({
+      _id: getCurrentFeedPostItem._id,
+      likes: cpyLikes
+    }, "/feed");
+  }
 
   return (
     <Fragment>
       <div className="mx-auto max-w-7xl">
-        <div className="flex items-baseline justify-between dark:border-white border-b pb-6 pt-24">
-          <h1 className="dark:text-white text-4xl font-bold tracking-tight text-gray-900">
+        <div className="flex flex-col sm:flex-row items-baseline justify-between border-b border-slate-200 dark:border-slate-700 pb-6 pt-16 gap-4">
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
             Explore Feed
-          </h1>
-          <div className="flex items-center">
+          </h2>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center p-1 rounded-lg bg-slate-100 dark:bg-slate-800">
+              <button onClick={() => setView('table')} className={`flex items-center gap-2 py-2 px-4 rounded-md transition-colors ${view === 'table' ? 'bg-white dark:bg-slate-700 shadow' : ''}`}>
+                <Rows3 size={20} className={view === 'table' ? 'text-slate-900 dark:text-white' : 'text-slate-500'} />
+                <span className={view === 'table' ? 'font-semibold text-slate-900 dark:text-white' : 'text-slate-500'}>Table</span>
+              </button>
+              <button onClick={() => setView('grid')} className={`flex items-center gap-2 py-2 px-4 rounded-md transition-colors ${view === 'grid' ? 'bg-white dark:bg-slate-700 shadow' : ''}`}>
+                <LayoutGrid size={20} className={view === 'grid' ? 'text-slate-900 dark:text-white' : 'text-slate-500'} />
+                <span className={view === 'grid' ? 'font-semibold text-slate-900 dark:text-white' : 'text-slate-500'}>Grid</span>
+              </button>
+            </div>
             <Button
-              onClick={() => setShowPostDialog(true)}
+              onClick={() => { setCurrentEditedItem(null); setShowPostDialog(true); }}
               className="flex h-11 items-center justify-center px-5"
             >
               Add New Post
             </Button>
           </div>
         </div>
-        <div className="py-12">
-          <div className="container m-auto p-0 flex flex-col gap-5 text-gray-700">
-            {allFeedPosts && allFeedPosts.length > 0 ? (
-              allFeedPosts.map((feedPostItem) => (
-                <div
-                  key={feedPostItem._id}
-                  className="group relative -mx-4 p-6 rounded-3xl bg-gray-100 hover:bg-white hover:shadow-2xl cursor-auto shadow-2xl shadow-transparent gap-8 flex"
-                >
-                  <div className="sm:w-2/6 rounded-3xl overflow-hidden transition-all duration-500 group-hover:rounded-xl">
-                    <img
-                      src={feedPostItem?.image}
-                      alt="Post"
-                      className="h-80 w-full object-cover object-top transition duration-500 group-hover:scale-105"
-                    />
+
+        {/* CONDITIONAL VIEWS */}
+        {view === 'grid' ? (
+          <div className="py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {optimisticPosts.map((item) => (
+              <FeedCommonCard
+                key={item._id} item={item}
+                isCurrentUser={profileInfo?._id === item.userId || user?.id === item.userId}
+                handleEdit={() => handleEdit(item)}
+                handleDelete={() => handleDelete(item._id)}
+                handleUpdateLikes={() => handleUpdateLikes(item)}
+                loggedInUser={user}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="py-12 max-w-5xl mx-auto flex flex-col gap-8">
+            {optimisticPosts.map((item) => (
+              <div key={item._id} className="group relative p-6 rounded-2xl bg-white dark:bg-slate-800 shadow-lg border border-slate-200 dark:border-slate-800">
+                <div className="flex gap-8">
+                  <div className="w-full md:w-2/6 h-60 md:h-auto rounded-xl overflow-hidden cursor-pointer" onClick={() => router.push(`/feed/${item._id}`)}>
+                    <img src={item?.images[0]} alt="Post" className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-105" />
                   </div>
-                  <div className="sm:p-2 sm:pl-0 sm:w-4/6">
-                    <span className="mt-4 mb-2 inline-block font-medium text-gray-500 sm:mt-0">
-                      {feedPostItem?.userName}
-                    </span>
-                    <h3 className="mb-6 text-4xl font-bold text-gray-900">
-                      {feedPostItem?.message}
-                    </h3>
-                    <div className="flex gap-5">
-                      <Heart
-                        size={25}
-                        fill={
-                          feedPostItem?.likes.some((likeItem) => likeItem.reactorUserId === user?.id)
-                            ? "#000000" // Black if the post is liked
-                            : "#ffffff" // White if the post is not liked
-                        }
-                        className={`cursor-pointer transition-transform duration-300 ${likedPostId === feedPostItem._id && isAnimating
-                          ? "scale-150"
-                          : "scale-100"
-                          }`} // Add scaling effect
-                        onClick={() => handleUpdateFeedPostLikes(feedPostItem)}
-                      />
-                      <span className="font-semibold text-xl">
-                        {feedPostItem?.likes?.length}
-                      </span>
+                  <div className="w-full md:w-4/6 flex flex-col">
+                    <span className="mb-2 inline-block font-medium text-slate-500 dark:text-slate-400">Posted by {item?.userName}</span>
+                    <h3 className="mb-4 text-2xl font-bold text-slate-900 dark:text-white">{item?.title}</h3>
+                    <div className="text-slate-600 dark:text-slate-300 line-clamp-3 flex-grow" dangerouslySetInnerHTML={{ __html: item.description }} />
+                    <div className="flex items-center gap-5 mt-6">
+                      <motion.div whileTap={{ scale: 1.5 }}>
+                        <Heart
+                          size={25}
+                          fill={item.likes.some(like => like.reactorUserId === user?.id) ? "red" : "none"}
+                          stroke={item.likes.some(like => like.reactorUserId === user?.id) ? "red" : "currentColor"}
+                          className="cursor-pointer text-slate-600 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-500"
+                          onClick={() => handleUpdateLikes(item)}
+                        />
+                      </motion.div>
+                      <span className="font-semibold text-xl text-slate-700 dark:text-slate-200">{item?.likes?.length}</span>
                     </div>
                   </div>
                 </div>
-              ))
-            ) : (
-              <h1>No posts found!</h1>
-            )}
+                {(profileInfo?._id === item.userId || user?.id === item.userId) && (
+                  <div className="absolute top-4 right-4 z-10">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger><MoreVertical /></DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => handleEdit(item)}>Edit</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDelete(item._id)}>Delete</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-        </div>
+        )}
       </div>
-      <Dialog
-        open={showPostDialog}
-        onOpenChange={() => {
-          setShowPostDialog(false);
-          setFormData({
-            message: "",
-            imageURL: "",
-          });
-        }}
-      >
-        <DialogContent className="h-[550px]">
-          <Textarea
-            name="message"
-            value={formData?.message}
-            onChange={(event) =>
-              setFormData({
-                ...formData,
-                message: event.target.value,
-              })
-            }
-            placeholder="What do you want to talk about?"
-            className="border-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 h-[200px] text-[28px]"
-          />
 
-          <div className="flex gap-5 items-center justify-between">
-            <Label for="imageURL">
-              <CirclePlus />
-              <Input
-                onChange={handleFileOnChange}
-                className="hidden"
-                id="imageURL"
-                type="file"
-              />
-            </Label>
-            <Button
-              onClick={handleSaveFeedPost}
-              disabled={formData?.imageURL === "" && formData?.message === ""}
-              className="flex w-40 h-11 items-center justify-center px-5 disabled:opacity-65"
-            >
-              Post
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <FeedPostDialog
+        key={currentEditedItem ? currentEditedItem._id : "new-post"}
+        showPostDialog={showPostDialog}
+        setShowPostDialog={setShowPostDialog}
+        user={user} profileInfo={profileInfo}
+        currentEditedItem={currentEditedItem}
+        setCurrentEditedItem={setCurrentEditedItem}
+      />
     </Fragment>
   );
 }
-
-export default Feed;
