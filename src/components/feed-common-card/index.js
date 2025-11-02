@@ -20,6 +20,13 @@ export default function FeedCommonCard({
   const router = useRouter();
   const isLiked = item.likes.some(like => like.reactorUserId === loggedInUser?.id);
 
+  const onEdit = (e) => {
+    e.stopPropagation();
+    setTimeout(() => {
+      handleEdit();
+    }, 0);
+  };
+
   return (
     <div className="relative flex flex-col items-start w-full shadow-lg rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 group">
       {isCurrentUser && (
@@ -31,7 +38,7 @@ export default function FeedCommonCard({
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={handleEdit}>Edit</DropdownMenuItem>
+              <DropdownMenuItem onSelect={onEdit}>Edit</DropdownMenuItem>
               <DropdownMenuItem onClick={handleDelete}>Delete</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -50,7 +57,7 @@ export default function FeedCommonCard({
         <h3 className="text-lg font-bold text-slate-900 dark:text-white truncate">{item.title}</h3>
 
         <div className="mt-4 flex items-center justify-between">
-          <span className="text-xs text-slate-500">{item.userName}</span>
+          <span className="text-xs text-slate-500">Posted by {item.userName}</span>
           <div className="flex items-center gap-2">
             <Heart
               size={20}

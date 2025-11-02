@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState, useOptimistic } from "react";
+import { Fragment, useState, useOptimistic, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import FeedCommonCard from "@/components/feed-common-card";
 import { deleteFeedPostAction, updateFeedPostAction } from "@/actions";
@@ -23,10 +23,23 @@ export default function Feed({ allFeedPosts, profileInfo, user }) {
 
   const [optimisticPosts, setOptimisticPosts] = useOptimistic(
     allFeedPosts,
-    (state, updatedPost) => {
-      return state.map(post => post._id === updatedPost._id ? updatedPost : post);
+    (state, { action, post }) => {
+      switch (action) {
+        case "like":
+          return state.map(p => p._id === post._id ? { ...p, likes: post.likes } : p);
+        case "delete":
+          return state.filter(p => p._id !== post.id);
+        default:
+          return state;
+      }
     }
   );
+
+  useEffect(() => {
+    if (!showPostDialog) {
+      setCurrentEditedItem(null);
+    }
+  }, [showPostDialog]);
 
   function handleEdit(item) {
     setCurrentEditedItem(item);
@@ -34,6 +47,7 @@ export default function Feed({ allFeedPosts, profileInfo, user }) {
   }
 
   async function handleDelete(id) {
+    setOptimisticPosts({ action: "delete", post: { id } });
     await deleteFeedPostAction(id, "/feed");
   }
 
@@ -133,7 +147,7 @@ export default function Feed({ allFeedPosts, profileInfo, user }) {
                     <DropdownMenu>
                       <DropdownMenuTrigger><MoreVertical /></DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => handleEdit(item)}>Edit</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => setTimeout(() => handleEdit(item), 0)}>Edit</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDelete(item._id)}>Delete</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
