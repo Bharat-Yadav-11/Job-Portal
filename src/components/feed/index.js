@@ -21,6 +21,20 @@ export default function Feed({ allFeedPosts, profileInfo, user }) {
   const [currentEditedItem, setCurrentEditedItem] = useState(null);
   const router = useRouter();
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setView('grid');
+      } else {
+        setView('table');
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const [optimisticPosts, setOptimisticPosts] = useOptimistic(
     allFeedPosts,
     (state, { action, post }) => {
@@ -121,13 +135,13 @@ export default function Feed({ allFeedPosts, profileInfo, user }) {
             {optimisticPosts.map((item) => (
               <div key={item._id} className="group relative p-6 rounded-2xl bg-white dark:bg-slate-800 shadow-lg border border-slate-200 dark:border-slate-800">
                 <div className="flex gap-8">
-                  <div className="w-full md:w-2/6 h-60 md:h-auto rounded-xl overflow-hidden cursor-pointer" onClick={() => router.push(`/feed/${item._id}`)}>
+                  <div className="w-full md:w-2/6 h-60  rounded-xl overflow-hidden cursor-pointer" onClick={() => router.push(`/feed/${item._id}`)}>
                     <img src={item?.images[0]} alt="Post" className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-105" />
                   </div>
-                  <div className="w-full md:w-4/6 flex flex-col">
+                  <div className="w-full md:w-4/6 flex flex-col h-60">
                     <span className="mb-2 inline-block font-medium text-slate-500 dark:text-slate-400">Posted by {item?.userName}</span>
-                    <h3 className="mb-4 text-2xl font-bold text-slate-900 dark:text-white">{item?.title}</h3>
-                    <div className="text-slate-600 dark:text-slate-300 line-clamp-3 flex-grow" dangerouslySetInnerHTML={{ __html: item.description }} />
+                    <h3 className="mb-4 text-2xl font-bold text-slate-900 dark:text-white overflow-hidden">{item?.title}</h3>
+                    <div className="text-slate-600 dark:text-slate-300 line-clamp-3 flex-grow overflow-hidden" dangerouslySetInnerHTML={{ __html: item.description }} />
                     <div className="flex items-center gap-5 mt-6">
                       <motion.div whileTap={{ scale: 1.5 }}>
                         <Heart
