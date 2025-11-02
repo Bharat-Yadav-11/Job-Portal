@@ -1,5 +1,5 @@
 import { fetchFeedPostDetailsAction } from "@/actions";
-import ImageCarousel from "@/components/image-carousel"; 
+import ImageCarousel from "@/components/image-carousel";
 import { currentUser } from "@clerk/nextjs";
 
 export default async function FeedPostDetails({ params }) {
@@ -16,7 +16,7 @@ export default async function FeedPostDetails({ params }) {
 
   const carouselImages = postDetails.images.map(imgUrl => ({
     image: imgUrl,
-    quote: '', 
+    quote: '',
     name: postDetails.title,
     title: `By ${postDetails.userName}`,
   }));
@@ -34,7 +34,14 @@ export default async function FeedPostDetails({ params }) {
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">{postDetails.title}</h1>
           <p className="mt-1 text-slate-600 dark:text-slate-400">Posted by {postDetails.userName}</p>
 
-          <div className="mt-8 prose prose-lg dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: postDetails.description }} />
+          <div className="
+            mt-8 prose prose-lg sm:prose-sm max-w-none
+            dark:prose-invert 
+            prose-p:leading-relaxed
+           prose-li:marker:text-slate-500 dark:prose-li:marker:text-slate-400
+           prose-a:text-indigo-600 prose-a:font-semibold prose-a:no-underline hover:prose-a:underline
+           dark:prose-a:text-indigo-400"
+            dangerouslySetInnerHTML={{ __html: postDetails.description }} />
         </div>
       </div>
     </div>

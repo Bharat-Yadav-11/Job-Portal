@@ -141,7 +141,7 @@ export default function Feed({ allFeedPosts, profileInfo, user }) {
                   <div className="w-full md:w-4/6 flex flex-col h-60">
                     <span className="mb-2 inline-block font-medium text-slate-500 dark:text-slate-400">Posted by {item?.userName}</span>
                     <h3 className="mb-4 text-2xl font-bold text-slate-900 dark:text-white overflow-hidden">{item?.title}</h3>
-                    <div className="text-slate-600 dark:text-slate-300 line-clamp-3 flex-grow overflow-hidden" dangerouslySetInnerHTML={{ __html: item.description }} />
+                    <div className="text-slate-600 dark:text-slate-300 line-clamp-3 flex-grow overflow-hidden prose prose-sm dark:prose-invert" dangerouslySetInnerHTML={{ __html: item.description }} />
                     <div className="flex items-center gap-5 mt-6">
                       <motion.div whileTap={{ scale: 1.5 }}>
                         <Heart

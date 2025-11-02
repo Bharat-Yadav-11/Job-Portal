@@ -115,6 +115,26 @@ export default function FeedPostDialog({ showPostDialog, setShowPostDialog, user
                 .dark .ql-editor.ql-blank::before {
                   color: #475569; /* slate-600 */
                 }
+                  .ql-editor.ql-blank::before {
+                  color: #94a3b8; /* slate-400 */
+                  font-style: normal; 
+                }
+                .dark .ql-editor.ql-blank::before {
+                  color: #475569; /* slate-600 */
+                }
+                .dark .ql-tooltip {
+                  background-color: #1f2937; /* gray-800 */
+                  border-color: #374151; /* gray-700 */
+                  color: #d1d5db; /* gray-300 */
+                }
+                .dark .ql-tooltip input {
+                  background-color: #374151; /* gray-700 */
+                  color: #f9fafb; /* gray-50 */
+                }
+                .dark .ql-action::before {
+                  color: #9ca3af; /* gray-400 */
+                }
+
               `}
             </style>
             <ReactQuill
